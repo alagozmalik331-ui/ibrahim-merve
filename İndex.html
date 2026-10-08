@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>İbrahim ∞ Merve</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: linear-gradient(135deg, #09090e, #1a0826, #2b0b1e);
+            color: #ffffff;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 15px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            z-index: 2;
+        }
+
+        /* İsimler ve Sonsuzluk İşareti */
+        .names-header {
+            font-size: 32px;
+            font-weight: bold;
+            color: #f5f6fa;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 10px rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .infinity {
+            font-size: 45px;
+            color: #ff4757;
+            animation: pulse 2s infinite;
+            text-shadow: 0 0 15px rgba(255, 71, 87, 0.6);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        h2 {
+            font-size: 22px;
+            letter-spacing: 3px;
+            color: #ff6b81;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+        }
+
+        /* 4'lü Kart Alanları */
+        .cards-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .media-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 107, 129, 0.2);
+            border-radius: 20px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
+            position: relative;
+        }
+
+        .media-display {
+            width: 100%;
+            height: 300px;
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px dashed rgba(255, 107, 129, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .media-display img, .media-display video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 15px;
+        }
+
+        .upload-placeholder {
+            color: #a4b0be;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 20px;
+        }
+
+        .upload-btn {
+            margin-top: 15px;
+            background: linear-gradient(45deg, #ff4757, #ff6b81);
+            border: none;
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+        }
+
+        .upload-btn:active {
+            transform: scale(0.95);
+        }
+
+        .love-quote {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            border-left: 3px solid #ff4757;
+            border-radius: 0 10px 10px 0;
+            font-size: 14px;
+            color: #f1f2f6;
+            font-style: italic;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        /* Gizli Dosya Seçici */
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Yüzen Kalpler */
+        .floating-heart {
+            position: fixed;
+            color: rgba(255, 71, 87, 0.15);
+            font-size: 20px;
+            animation: floatUp 6s linear infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0.5) rotate(0deg); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-10vh) scale(1.2) rotate(45deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="hearts-container"></div>
+
+    <div class="container">
+        <!-- Başlık -->
+        <div class="names-header">
+            İbrahim <span class="infinity">∞</span> Merve
+        </div>
+        <h2>ÖMRÜM 💔</h2>
+
+        <!-- 4 Tane Medya Kartı -->
+        <div class="cards-grid" id="cards-container"></div>
+    </div>
+
+    <script>
+        // 4 Tane Özel Aşk Sözü
+        const loveQuotes = [
+            "Gözlerinin içinde kaybolduğum o ilk günü dün gibi hatırlıyorum... Kalbim hâlâ aynı yerde.",
+            "Sen benim bu hayattaki en güzel iyikim, içimdeki hiç dinmeyen en derin sızımsın.",
+            "Aramıza geçen zaman veya mesafeler girebilir ama senin yerini kimse dolduramaz.",
+            "Ne kadar uzakta olursak olalım, bu kalbin atış sebebi hâlâ sensin."
+        ];
+
+        let db;
+        const request = indexedDB.open("IbrahimMerveDB_V4", 1);
+
+        request.onupgradeneeded = function(e) {
+            db = e.target.result;
+            if (!db.objectStoreNames.contains("mediaStore")) {
+                db.createObjectStore("mediaStore", { keyPath: "id" });
+            }
+        };
+
+        request.onsuccess = function(e) {
+            db = e.target.result;
+            renderCards();
+        };
+
+        // 4 Kartı Oluştur
+        function renderCards() {
+            const container = document.getElementById('cards-container');
+            container.innerHTML = '';
+
+            for (let i = 0; i < 4; i++) {
+                const card = document.createElement('div');
+                card.className = 'media-card';
+                card.innerHTML = `
+                    <div class="media-display" id="display-${i}">
+                        <div class="upload-placeholder" onclick="triggerUpload(${i})">
+                            <span style="font-size: 24px;">➕</span>
+                            <span>Resim veya Video Ekle</span>
+                        </div>
+                    </div>
+                    <button class="upload-btn" onclick="triggerUpload(${i})">Anıyı Seç / Değiştir</button>
+                    <input type="file" id="file-input-${i}" accept="image/*,video/*" onchange="handleFileSelect(${i}, event)">
+                    <div class="love-quote">"${loveQuotes[i]}"</div>
+                `;
+                container.appendChild(card);
+                loadSavedMedia(i);
+            }
+        }
+
+        function triggerUpload(index) {
+            document.getElementById(`file-input-${index}`).click();
+        }
+
+        function handleFileSelect(index, event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const displayDiv = document.getElementById(`display-${index}`);
+            displayDiv.innerHTML = `<div class="upload-placeholder">Yükleniyor... ⏳</div>`;
+
+            const mediaData = {
+                id: index,
+                type: file.type.startsWith('video') ? 'video' : 'image',
+                fileData: file
+            };
+
+            const transaction = db.transaction(["mediaStore"], "readwrite");
+            const store = transaction.objectStore("mediaStore");
+            store.put(mediaData);
+
+            transaction.oncomplete = function() {
+                displayMedia(index, mediaData.type, mediaData.fileData);
+            };
+        }
+
+        function loadSavedMedia(index) {
+            if (!db) return;
+            const transaction = db.transaction(["mediaStore"], "readonly");
+            const store = transaction.objectStore("mediaStore");
+            const getReq = store.get(index);
+
+            getReq.onsuccess = function() {
+                if (getReq.result && getReq.result.fileData) {
+                    displayMedia(index, getReq.result.type, getReq.result.fileData);
+                }
+            };
+        }
+
+        function displayMedia(index, type, fileData) {
+            const displayDiv = document.getElementById(`display-${index}`);
+            const fileURL = URL.createObjectURL(fileData);
+
+            if (type === 'video') {
+                displayDiv.innerHTML = `<video src="${fileURL}" controls loop playsinline preload="metadata"></video>`;
+            } else {
+                displayDiv.innerHTML = `<img src="${fileURL}" alt="Anı">`;
+            }
+        }
+
+        // Kalp Yağmuru
+        setInterval(() => {
+            const container = document.getElementById('hearts-container');
+            const heart = document.createElement('div');
+            heart.classList.add('floating-heart');
+            heart.innerHTML = '❤️';
+            heart.style.left = Math.random() * window.innerWidth + 'px';
+            heart.style.fontSize = (Math.random() * 15 + 10) + 'px';
+            heart.style.animationDuration = (Math.random() * 4 + 4) + 's';
+            container.appendChild(heart);
+
+            setTimeout(() => { heart.remove(); }, 6000);
+        }, 500);
+    </script>
+</body>
+</html>
